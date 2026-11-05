@@ -8,6 +8,7 @@ import '../core/mvo.dart';
 import '../core/plan.dart';
 import '../providers.dart';
 import 'common.dart';
+import 'motion.dart';
 
 class PlanTab extends ConsumerWidget {
   const PlanTab({super.key});
@@ -92,11 +93,11 @@ class _MixRow extends StatelessWidget {
             '$label — target ${fmtPct(target)} · current ${fmtPct(current)}',
           ),
           const SizedBox(height: 4),
-          LinearProgressIndicator(value: target.clamp(0, 1), minHeight: 8),
+          AnimatedBar(value: target),
           const SizedBox(height: 2),
-          LinearProgressIndicator(
-            value: current.clamp(0, 1),
-            minHeight: 4,
+          AnimatedBar(
+            value: current,
+            height: 4,
             color: Theme.of(context).colorScheme.tertiary,
           ),
         ],

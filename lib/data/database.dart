@@ -112,6 +112,12 @@ class AppDatabase extends _$AppDatabase {
   Future<void> undecide(String id) =>
       (delete(suggestionLog)..where((r) => r.id.equals(id))).go();
 
+  /// Result of SQLite's integrity check: 'ok' or the first problem found.
+  Future<String> integrityCheck() async {
+    final rows = await customSelect('PRAGMA integrity_check').get();
+    return rows.isEmpty ? 'no result' : rows.first.data.values.first.toString();
+  }
+
   // ---- settings ----
   Stream<String?> watchSetting(String key) => (select(
     settings,

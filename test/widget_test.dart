@@ -7,6 +7,7 @@ import 'package:samridhi/data/database.dart';
 import 'package:samridhi/main.dart';
 import 'package:samridhi/providers.dart';
 import 'package:samridhi/security/lock_controller.dart';
+import 'package:samridhi/ui/motion.dart';
 import 'package:samridhi/security/pin_lock.dart';
 import 'package:samridhi/sync/vault_crypto.dart' show KdfParams;
 
@@ -34,7 +35,8 @@ Future<void> settle(WidgetTester tester) async {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 100)),
     );
-    await tester.pump();
+    // Also lets tab-switch and bar animations finish.
+    await tester.pump(const Duration(milliseconds: 600));
   }
 }
 
@@ -107,12 +109,7 @@ void main() {
     await tester.pumpWidget(app(db));
     await settle(tester);
     await tester.tap(find.text('Insights'));
-    for (var i = 0; i < 4; i++) {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 100)),
-      );
-      await tester.pump();
-    }
+    await settle(tester);
     expect(find.text('Rebalancing'), findsOneWidget);
     expect(find.textContaining('Outside bands'), findsOneWidget);
     expect(find.textContaining('Synthetic sample data'), findsWidgets);
@@ -198,6 +195,30 @@ void main() {
     expect(find.text('Samridhi is locked'), findsNothing);
     expect(find.text('Plan'), findsWidgets);
     await unmount(tester);
+  });
+
+  testWidgets('reduced motion turns animations off', (tester) async {
+    late Duration normal, reduced;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (c) {
+            normal = motionDuration(c);
+            return MediaQuery(
+              data: const MediaQueryData(disableAnimations: true),
+              child: Builder(
+                builder: (c2) {
+                  reduced = motionDuration(c2);
+                  return const SizedBox();
+                },
+              ),
+            );
+          },
+        ),
+      ),
+    );
+    expect(normal, const Duration(milliseconds: 350));
+    expect(reduced, Duration.zero);
   });
 
   test('database round-trips holdings and cascades account delete', () async {

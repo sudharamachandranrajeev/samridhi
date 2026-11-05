@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'agents_tab.dart';
 import 'goals_tab.dart';
+import 'motion.dart';
 import 'insights_tab.dart';
 import 'plan_tab.dart';
 import 'risk_tab.dart';
@@ -42,7 +43,20 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: _tabs[_index].$3,
+      body: AnimatedSwitcher(
+        duration: motionDuration(context, 250),
+        transitionBuilder: (child, anim) => FadeTransition(
+          opacity: anim,
+          child: SlideTransition(
+            position: Tween(
+              begin: const Offset(0, 0.02),
+              end: Offset.zero,
+            ).animate(anim),
+            child: child,
+          ),
+        ),
+        child: KeyedSubtree(key: ValueKey(_index), child: _tabs[_index].$3),
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),

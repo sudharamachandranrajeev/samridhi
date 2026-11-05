@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'dart:io';
+
 import 'data/connection.dart';
 import 'providers.dart';
 import 'ui/home_page.dart';
 import 'ui/lock_gate.dart';
+import 'update/launcher.dart';
 
 /// Samridhi — local-first wealth, asset and investment planning.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // If an updated version was installed in-app, hand over to it.
+  final store = updatesSupported ? await defaultVersionStore() : null;
+  if (store != null && await relaunchIfUpdated(store)) exit(0);
   final db = await openEncryptedDatabase();
   runApp(
     ProviderScope(
@@ -16,6 +22,11 @@ Future<void> main() async {
       child: const SamridhiApp(),
     ),
   );
+  // An updated copy proves it starts (DB opened, first frame drawn); until
+  // then the launcher may roll it back.
+  if (store != null && runningFromStore(store)) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => store.markHealthy());
+  }
 }
 
 class SamridhiApp extends StatelessWidget {
