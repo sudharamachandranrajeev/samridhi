@@ -28,3 +28,4 @@ server/pb_data/
 
 # Agent run artefacts
 .claude-*
+.test-run*.log

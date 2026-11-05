@@ -12,6 +12,13 @@ Widget app(AppDatabase db) => ProviderScope(
   child: const SamridhiApp(),
 );
 
+/// Unmounts the app so Riverpod cancels its drift streams, then lets drift's
+/// zero-duration stream-cleanup timer fire before the test ends.
+Future<void> unmount(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox());
+  await tester.pump(Duration.zero);
+}
+
 void main() {
   late AppDatabase db;
   setUp(() => db = AppDatabase(NativeDatabase.memory()));
@@ -25,6 +32,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining('not financial advice'), findsOneWidget);
+    await unmount(tester);
   });
 
   testWidgets('saved risk answers produce a plan with disclosure', (
@@ -41,14 +49,22 @@ void main() {
         ),
       );
     });
+    // Tall surface so the lazily built plan ListView renders every row.
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(app(db));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 100)),
-    );
-    await tester.pump();
+    // drift streams emit on real time; let each provider settle in turn.
+    for (var i = 0; i < 5; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pump();
+    }
     expect(find.textContaining('profile'), findsWidgets);
     expect(find.text('Sample retirement'), findsOneWidget);
     expect(find.textContaining('not financial advice'), findsOneWidget);
+    await unmount(tester);
   });
 
   test('database round-trips holdings and cascades account delete', () async {
