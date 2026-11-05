@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'agents_tab.dart';
 import 'goals_tab.dart';
 import 'insights_tab.dart';
 import 'plan_tab.dart';
@@ -22,6 +23,7 @@ class _HomePageState extends State<HomePage> {
     ('Wealth', Icons.account_balance_wallet_outlined, WealthTab()),
     ('Goals', Icons.flag_outlined, GoalsTab()),
     ('Insights', Icons.insights_outlined, InsightsTab()),
+    ('Agents', Icons.smart_toy_outlined, AgentsTab()),
     ('Risk', Icons.speed_outlined, RiskTab()),
   ];
 

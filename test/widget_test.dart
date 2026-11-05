@@ -102,6 +102,64 @@ void main() {
     await unmount(tester);
   });
 
+  Future<void> settle(WidgetTester tester) async {
+    for (var i = 0; i < 4; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pump();
+    }
+  }
+
+  testWidgets('agents are off by default and need an explicit tap', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app(db));
+    await tester.tap(find.text('Agents'));
+    await settle(tester);
+    expect(find.text('Agents are off'), findsOneWidget);
+    expect(find.textContaining('never place trades'), findsOneWidget);
+    await unmount(tester);
+  });
+
+  testWidgets('accepting a suggestion records intent and executes nothing', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      await db.saveRiskAnswers({for (final q in riskQuestions) q.id: 2});
+      await db.setSetting('agents.enabled', '1');
+      await db.upsertAccount(AccountsCompanion.insert(id: 'a', name: 'Sample'));
+      await db.upsertHolding(
+        HoldingsCompanion.insert(
+          id: 'h',
+          accountId: 'a',
+          name: 'Sample equity fund',
+          assetClass: 'equity',
+          value: 10000,
+        ),
+      );
+    });
+    tester.view.physicalSize = const Size(800, 4000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(app(db));
+    await tester.tap(find.text('Agents'));
+    await settle(tester);
+    expect(find.text('Rebalance to target'), findsOneWidget);
+    expect(find.textContaining('Confidence:'), findsWidgets);
+    expect(find.textContaining('AI-generated'), findsNothing);
+    expect(find.textContaining('Off. Add your own model'), findsOneWidget);
+    await tester.tap(find.text('Accept (record my intent)'));
+    await settle(tester);
+    expect(find.text('Accepted — not executed'), findsOneWidget);
+    final log = await tester.runAsync(() => db.select(db.suggestionLog).get());
+    expect(log!.single.status, 'accepted');
+    // Holdings are untouched by accepting.
+    final hs = await tester.runAsync(() => db.select(db.holdings).get());
+    expect(hs!.single.value, 10000);
+    await unmount(tester);
+  });
+
   test('database round-trips holdings and cascades account delete', () async {
     await db.upsertAccount(AccountsCompanion.insert(id: 'a', name: 'Sample'));
     await db.upsertHolding(

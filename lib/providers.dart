@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'agents/agents.dart';
 import 'core/asset_class.dart';
+import 'core/forecast.dart';
+import 'core/sample_data.dart';
 import 'core/plan.dart';
 import 'core/risk_profile.dart';
 import 'data/database.dart';
@@ -53,5 +56,48 @@ final planProvider = Provider<PlanResult?>((ref) {
     goals: [
       for (final g in goals) GoalInput(g.name, g.targetAmount, g.horizonYears),
     ],
+  );
+});
+
+// ---- sample data + forecasts (synthetic; see sample_data.dart) ----
+final sampleDataProvider = Provider((ref) => sampleMonthlyReturns());
+
+final forecastsProvider = Provider<Map<AssetClass, Forecast>>((ref) {
+  final data = ref.watch(sampleDataProvider);
+  return {
+    for (final c in AssetClass.values)
+      if (c != AssetClass.cash) c: forecastSes(annualise(data[c]!)),
+  };
+});
+
+// ---- agents / AI switches (both off by default) ----
+final agentsEnabledProvider = StreamProvider<bool>(
+  (ref) => ref
+      .watch(databaseProvider)
+      .watchSetting('agents.enabled')
+      .map((v) => v == '1'),
+);
+final aiEnabledProvider = StreamProvider<bool>(
+  (ref) => ref
+      .watch(databaseProvider)
+      .watchSetting('ai.enabled')
+      .map((v) => v == '1'),
+);
+final decisionsProvider = StreamProvider<Map<String, String>>(
+  (ref) => ref.watch(databaseProvider).watchDecisions(),
+);
+
+/// Everything the agents may see; null until the questionnaire is done.
+final agentContextProvider = Provider<AgentContext?>((ref) {
+  final risk = ref.watch(riskScoreProvider);
+  final plan = ref.watch(planProvider);
+  if (risk == null || plan == null) return null;
+  final accounts = ref.watch(accountsProvider).asData?.value ?? const [];
+  return AgentContext(
+    risk: risk,
+    plan: plan,
+    values: ref.watch(currentMixProvider),
+    wrappers: {for (final a in accounts) a.wrapper},
+    forecasts: ref.watch(forecastsProvider),
   );
 });

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/asset_class.dart';
 import '../core/backtest.dart';
-import '../core/forecast.dart';
 import '../core/plan.dart';
 import '../core/rebalance.dart';
 import '../core/sample_data.dart';
@@ -20,27 +19,17 @@ const _fallbackTarget = {
   AssetClass.cash: 0.0,
 };
 
-final _sampleProvider = Provider((ref) => sampleMonthlyReturns());
-
 final _targetProvider = Provider<Map<AssetClass, double>>(
   (ref) => ref.watch(planProvider)?.blended ?? _fallbackTarget,
 );
 
 final backtestsProvider = Provider<List<BacktestResult>>((ref) {
-  final data = ref.watch(_sampleProvider);
+  final data = ref.watch(sampleDataProvider);
   final target = ref.watch(_targetProvider);
   return [
     for (final r in RebalanceRule.values)
       backtest(monthly: data, target: target, rule: r),
   ];
-});
-
-final forecastsProvider = Provider<Map<AssetClass, Forecast>>((ref) {
-  final data = ref.watch(_sampleProvider);
-  return {
-    for (final c in AssetClass.values)
-      if (c != AssetClass.cash) c: forecastSes(annualise(data[c]!)),
-  };
 });
 
 class InsightsTab extends ConsumerWidget {

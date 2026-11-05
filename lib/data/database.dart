@@ -60,20 +60,57 @@ class Settings extends Table {
   Set<Column> get primaryKey => {key};
 }
 
-@DriftDatabase(tables: [Accounts, Holdings, Goals, RiskAnswers, Settings])
+/// The user's decision on an agent suggestion. Accepting only records intent
+/// — Samridhi never places orders — and doubles as the local track record.
+class SuggestionLog extends Table {
+  TextColumn get id => text()();
+  TextColumn get agent => text()();
+  TextColumn get title => text()();
+
+  /// 'accepted' or 'dismissed'.
+  TextColumn get status => text()();
+  DateTimeColumn get decidedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DriftDatabase(
+  tables: [Accounts, Holdings, Goals, RiskAnswers, Settings, SuggestionLog],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
     onUpgrade: (m, from, to) async {
       if (from < 2) await m.createTable(settings);
+      if (from < 3) await m.createTable(suggestionLog);
     },
   );
+
+  // ---- suggestion decisions ----
+  Stream<Map<String, String>> watchDecisions() =>
+      select(suggestionLog)
+          .watch()
+          .map((rows) => {for (final r in rows) r.id: r.status});
+  Future<void> decide(String id, String agent, String title, String status) =>
+      into(suggestionLog).insertOnConflictUpdate(
+        SuggestionLogCompanion.insert(
+          id: id,
+          agent: agent,
+          title: title,
+          status: status,
+          decidedAt: DateTime.now(),
+        ),
+      );
+
+  Future<void> undecide(String id) =>
+      (delete(suggestionLog)..where((r) => r.id.equals(id))).go();
 
   // ---- settings ----
   Stream<String?> watchSetting(String key) => (select(

@@ -1418,6 +1418,359 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   }
 }
 
+class $SuggestionLogTable extends SuggestionLog
+    with TableInfo<$SuggestionLogTable, SuggestionLogData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SuggestionLogTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _agentMeta = const VerificationMeta('agent');
+  @override
+  late final GeneratedColumn<String> agent = GeneratedColumn<String>(
+    'agent',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _decidedAtMeta = const VerificationMeta(
+    'decidedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> decidedAt = GeneratedColumn<DateTime>(
+    'decided_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, agent, title, status, decidedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'suggestion_log';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SuggestionLogData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('agent')) {
+      context.handle(
+        _agentMeta,
+        agent.isAcceptableOrUnknown(data['agent']!, _agentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_agentMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('decided_at')) {
+      context.handle(
+        _decidedAtMeta,
+        decidedAt.isAcceptableOrUnknown(data['decided_at']!, _decidedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_decidedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SuggestionLogData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SuggestionLogData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      agent: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}agent'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      decidedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}decided_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SuggestionLogTable createAlias(String alias) {
+    return $SuggestionLogTable(attachedDatabase, alias);
+  }
+}
+
+class SuggestionLogData extends DataClass
+    implements Insertable<SuggestionLogData> {
+  final String id;
+  final String agent;
+  final String title;
+
+  /// 'accepted' or 'dismissed'.
+  final String status;
+  final DateTime decidedAt;
+  const SuggestionLogData({
+    required this.id,
+    required this.agent,
+    required this.title,
+    required this.status,
+    required this.decidedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['agent'] = Variable<String>(agent);
+    map['title'] = Variable<String>(title);
+    map['status'] = Variable<String>(status);
+    map['decided_at'] = Variable<DateTime>(decidedAt);
+    return map;
+  }
+
+  SuggestionLogCompanion toCompanion(bool nullToAbsent) {
+    return SuggestionLogCompanion(
+      id: Value(id),
+      agent: Value(agent),
+      title: Value(title),
+      status: Value(status),
+      decidedAt: Value(decidedAt),
+    );
+  }
+
+  factory SuggestionLogData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SuggestionLogData(
+      id: serializer.fromJson<String>(json['id']),
+      agent: serializer.fromJson<String>(json['agent']),
+      title: serializer.fromJson<String>(json['title']),
+      status: serializer.fromJson<String>(json['status']),
+      decidedAt: serializer.fromJson<DateTime>(json['decidedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'agent': serializer.toJson<String>(agent),
+      'title': serializer.toJson<String>(title),
+      'status': serializer.toJson<String>(status),
+      'decidedAt': serializer.toJson<DateTime>(decidedAt),
+    };
+  }
+
+  SuggestionLogData copyWith({
+    String? id,
+    String? agent,
+    String? title,
+    String? status,
+    DateTime? decidedAt,
+  }) => SuggestionLogData(
+    id: id ?? this.id,
+    agent: agent ?? this.agent,
+    title: title ?? this.title,
+    status: status ?? this.status,
+    decidedAt: decidedAt ?? this.decidedAt,
+  );
+  SuggestionLogData copyWithCompanion(SuggestionLogCompanion data) {
+    return SuggestionLogData(
+      id: data.id.present ? data.id.value : this.id,
+      agent: data.agent.present ? data.agent.value : this.agent,
+      title: data.title.present ? data.title.value : this.title,
+      status: data.status.present ? data.status.value : this.status,
+      decidedAt: data.decidedAt.present ? data.decidedAt.value : this.decidedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SuggestionLogData(')
+          ..write('id: $id, ')
+          ..write('agent: $agent, ')
+          ..write('title: $title, ')
+          ..write('status: $status, ')
+          ..write('decidedAt: $decidedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, agent, title, status, decidedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SuggestionLogData &&
+          other.id == this.id &&
+          other.agent == this.agent &&
+          other.title == this.title &&
+          other.status == this.status &&
+          other.decidedAt == this.decidedAt);
+}
+
+class SuggestionLogCompanion extends UpdateCompanion<SuggestionLogData> {
+  final Value<String> id;
+  final Value<String> agent;
+  final Value<String> title;
+  final Value<String> status;
+  final Value<DateTime> decidedAt;
+  final Value<int> rowid;
+  const SuggestionLogCompanion({
+    this.id = const Value.absent(),
+    this.agent = const Value.absent(),
+    this.title = const Value.absent(),
+    this.status = const Value.absent(),
+    this.decidedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SuggestionLogCompanion.insert({
+    required String id,
+    required String agent,
+    required String title,
+    required String status,
+    required DateTime decidedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       agent = Value(agent),
+       title = Value(title),
+       status = Value(status),
+       decidedAt = Value(decidedAt);
+  static Insertable<SuggestionLogData> custom({
+    Expression<String>? id,
+    Expression<String>? agent,
+    Expression<String>? title,
+    Expression<String>? status,
+    Expression<DateTime>? decidedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (agent != null) 'agent': agent,
+      if (title != null) 'title': title,
+      if (status != null) 'status': status,
+      if (decidedAt != null) 'decided_at': decidedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SuggestionLogCompanion copyWith({
+    Value<String>? id,
+    Value<String>? agent,
+    Value<String>? title,
+    Value<String>? status,
+    Value<DateTime>? decidedAt,
+    Value<int>? rowid,
+  }) {
+    return SuggestionLogCompanion(
+      id: id ?? this.id,
+      agent: agent ?? this.agent,
+      title: title ?? this.title,
+      status: status ?? this.status,
+      decidedAt: decidedAt ?? this.decidedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (agent.present) {
+      map['agent'] = Variable<String>(agent.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (decidedAt.present) {
+      map['decided_at'] = Variable<DateTime>(decidedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SuggestionLogCompanion(')
+          ..write('id: $id, ')
+          ..write('agent: $agent, ')
+          ..write('title: $title, ')
+          ..write('status: $status, ')
+          ..write('decidedAt: $decidedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1426,6 +1779,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GoalsTable goals = $GoalsTable(this);
   late final $RiskAnswersTable riskAnswers = $RiskAnswersTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
+  late final $SuggestionLogTable suggestionLog = $SuggestionLogTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1436,6 +1790,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     goals,
     riskAnswers,
     settings,
+    suggestionLog,
   ];
 }
 
@@ -2507,6 +2862,219 @@ typedef $$SettingsTableProcessedTableManager =
       Setting,
       PrefetchHooks Function()
     >;
+typedef $$SuggestionLogTableCreateCompanionBuilder =
+    SuggestionLogCompanion Function({
+      required String id,
+      required String agent,
+      required String title,
+      required String status,
+      required DateTime decidedAt,
+      Value<int> rowid,
+    });
+typedef $$SuggestionLogTableUpdateCompanionBuilder =
+    SuggestionLogCompanion Function({
+      Value<String> id,
+      Value<String> agent,
+      Value<String> title,
+      Value<String> status,
+      Value<DateTime> decidedAt,
+      Value<int> rowid,
+    });
+
+class $$SuggestionLogTableFilterComposer
+    extends Composer<_$AppDatabase, $SuggestionLogTable> {
+  $$SuggestionLogTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get agent => $composableBuilder(
+    column: $table.agent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get decidedAt => $composableBuilder(
+    column: $table.decidedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SuggestionLogTableOrderingComposer
+    extends Composer<_$AppDatabase, $SuggestionLogTable> {
+  $$SuggestionLogTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get agent => $composableBuilder(
+    column: $table.agent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get decidedAt => $composableBuilder(
+    column: $table.decidedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SuggestionLogTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SuggestionLogTable> {
+  $$SuggestionLogTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get agent =>
+      $composableBuilder(column: $table.agent, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get decidedAt =>
+      $composableBuilder(column: $table.decidedAt, builder: (column) => column);
+}
+
+class $$SuggestionLogTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SuggestionLogTable,
+          SuggestionLogData,
+          $$SuggestionLogTableFilterComposer,
+          $$SuggestionLogTableOrderingComposer,
+          $$SuggestionLogTableAnnotationComposer,
+          $$SuggestionLogTableCreateCompanionBuilder,
+          $$SuggestionLogTableUpdateCompanionBuilder,
+          (
+            SuggestionLogData,
+            BaseReferences<
+              _$AppDatabase,
+              $SuggestionLogTable,
+              SuggestionLogData
+            >,
+          ),
+          SuggestionLogData,
+          PrefetchHooks Function()
+        > {
+  $$SuggestionLogTableTableManager(_$AppDatabase db, $SuggestionLogTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SuggestionLogTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SuggestionLogTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SuggestionLogTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> agent = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime> decidedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SuggestionLogCompanion(
+                id: id,
+                agent: agent,
+                title: title,
+                status: status,
+                decidedAt: decidedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String agent,
+                required String title,
+                required String status,
+                required DateTime decidedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => SuggestionLogCompanion.insert(
+                id: id,
+                agent: agent,
+                title: title,
+                status: status,
+                decidedAt: decidedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SuggestionLogTable, SuggestionLogData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $SuggestionLogTable,
+                    SuggestionLogData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SuggestionLogTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SuggestionLogTable,
+      SuggestionLogData,
+      $$SuggestionLogTableFilterComposer,
+      $$SuggestionLogTableOrderingComposer,
+      $$SuggestionLogTableAnnotationComposer,
+      $$SuggestionLogTableCreateCompanionBuilder,
+      $$SuggestionLogTableUpdateCompanionBuilder,
+      (
+        SuggestionLogData,
+        BaseReferences<_$AppDatabase, $SuggestionLogTable, SuggestionLogData>,
+      ),
+      SuggestionLogData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2521,4 +3089,6 @@ class $AppDatabaseManager {
       $$RiskAnswersTableTableManager(_db, _db.riskAnswers);
   $$SettingsTableTableManager get settings =>
       $$SettingsTableTableManager(_db, _db.settings);
+  $$SuggestionLogTableTableManager get suggestionLog =>
+      $$SuggestionLogTableTableManager(_db, _db.suggestionLog);
 }
