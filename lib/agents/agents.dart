@@ -42,6 +42,8 @@ class AgentContext {
     required this.wrappers,
     required this.forecasts,
     this.bands = RebalanceBands.standard,
+    this.acceptedRebalances = const [],
+    this.asOf,
   });
   final RiskScore risk;
   final PlanResult plan;
@@ -53,6 +55,12 @@ class AgentContext {
   final Set<String> wrappers;
   final Map<AssetClass, Forecast> forecasts;
   final RebalanceBands bands;
+
+  /// When the user accepted past rebalance suggestions (their own log).
+  final List<DateTime> acceptedRebalances;
+
+  /// Clock for the above; null means "now".
+  final DateTime? asOf;
 
   double get total => values.values.fold(0.0, (a, b) => a + b);
 }
@@ -218,10 +226,49 @@ class ComplianceAgent implements Agent {
   }
 }
 
+/// Behavioural-gap nudge from the user's own history. Cites Betterment's
+/// published figure as general education only: it describes one provider's
+/// clients, not a forecast for this user.
+class BehaviorAgent implements Agent {
+  @override
+  String get name => 'Behaviour';
+
+  /// Accepted rebalances in the trailing year before the nudge appears.
+  static const threshold = 3;
+
+  @override
+  List<Suggestion> run(AgentContext ctx) {
+    final now = ctx.asOf ?? DateTime.now();
+    final cutoff = now.subtract(const Duration(days: 365));
+    final n = ctx.acceptedRebalances.where((d) => d.isAfter(cutoff)).length;
+    if (n < threshold) return const [];
+    return [
+      Suggestion(
+        id: 'behavior:changes',
+        agent: name,
+        kind: SuggestionKind.note,
+        title: 'You have changed course $n times this year',
+        detail:
+            'You accepted $n rebalance suggestions in the last 12 months. '
+            'Betterment reported that its clients who made allocation '
+            'changes trailed a simple hold of their own average allocation '
+            'by about 22 basis points on average, and the gap grew with the '
+            'number of changes. Rebalancing on a schedule or only when a '
+            'band is breached avoids reacting to headlines.',
+        confidence:
+            'Count is from your own local log. The 22 bp figure is one '
+            "provider's published average over its clients, an educational "
+            'reference and not a prediction for you.',
+      ),
+    ];
+  }
+}
+
 List<Agent> defaultAgents() => [
   RiskProfileAgent(),
   PortfolioAgent(),
   ForecastAgent(),
   RebalancingAgent(),
   ComplianceAgent(),
+  BehaviorAgent(),
 ];

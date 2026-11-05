@@ -87,6 +87,10 @@ final decisionsProvider = StreamProvider<Map<String, String>>(
   (ref) => ref.watch(databaseProvider).watchDecisions(),
 );
 
+final acceptedRebalancesProvider = StreamProvider<List<DateTime>>(
+  (ref) => ref.watch(databaseProvider).watchAcceptedAt('Rebalancing'),
+);
+
 /// Everything the agents may see; null until the questionnaire is done.
 final agentContextProvider = Provider<AgentContext?>((ref) {
   final risk = ref.watch(riskScoreProvider);
@@ -99,5 +103,7 @@ final agentContextProvider = Provider<AgentContext?>((ref) {
     values: ref.watch(currentMixProvider),
     wrappers: {for (final a in accounts) a.wrapper},
     forecasts: ref.watch(forecastsProvider),
+    acceptedRebalances:
+        ref.watch(acceptedRebalancesProvider).asData?.value ?? const [],
   );
 });

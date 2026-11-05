@@ -27,6 +27,7 @@ Map<AssetClass, double> money(double eq, double bonds) => {
 AgentContext ctx({
   Map<AssetClass, double>? values,
   Set<String> wrappers = const {},
+  List<DateTime> accepted = const [],
 }) {
   final risk = scoreRisk({for (final q in riskQuestions) q.id: 2});
   final plan = buildPlan(
@@ -39,6 +40,8 @@ AgentContext ctx({
     plan: plan,
     values: values ?? money(60000, 40000),
     wrappers: wrappers,
+    acceptedRebalances: accepted,
+    asOf: DateTime(2026, 11, 5),
     forecasts: {
       AssetClass.equity: forecastSes(annualise(data[AssetClass.equity]!)),
     },
@@ -208,6 +211,25 @@ void main() {
       }
       expect(run.errors, isEmpty);
       expect(run.narrative, isNull);
+    });
+
+    test('behaviour nudge: needs 3 accepted rebalances in the last year', () {
+      final recent = [
+        DateTime(2026, 2, 1),
+        DateTime(2026, 6, 1),
+        DateTime(2026, 9, 1),
+      ];
+      expect(
+        BehaviorAgent().run(ctx(accepted: recent.take(2).toList())),
+        isEmpty,
+      );
+      final old = [DateTime(2024, 1, 1), ...recent.take(2)];
+      expect(BehaviorAgent().run(ctx(accepted: old)), isEmpty);
+      final s = BehaviorAgent().run(ctx(accepted: recent)).single;
+      expect(s.title, contains('3 times'));
+      expect(s.detail, contains('22 basis points'));
+      expect(s.confidence, contains('not a prediction'));
+      expect(s.actionable, isFalse);
     });
 
     test('rebalancing: on-target is info, drifted is actionable', () {

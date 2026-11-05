@@ -98,6 +98,14 @@ class AppDatabase extends _$AppDatabase {
       select(suggestionLog)
           .watch()
           .map((rows) => {for (final r in rows) r.id: r.status});
+
+  /// When the user accepted suggestions from [agent].
+  Stream<List<DateTime>> watchAcceptedAt(String agent) =>
+      (select(suggestionLog)
+            ..where((r) => r.agent.equals(agent) & r.status.equals('accepted')))
+          .watch()
+          .map((rows) => [for (final r in rows) r.decidedAt]);
+
   Future<void> decide(String id, String agent, String title, String status) =>
       into(suggestionLog).insertOnConflictUpdate(
         SuggestionLogCompanion.insert(
