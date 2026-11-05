@@ -2,7 +2,7 @@
 ; (flutter build windows) and compiles this with
 ;   iscc /DAppVersion=0.1.0 windows\installer\samridhi.iss
 ; Installs for the current user by default (no admin prompt). Uninstalling
-; leaves the encrypted data in %APPDATA%\Samridhi alone.
+; leaves the encrypted data in the per-user %APPDATA% folder alone.
 
 #ifndef AppVersion
   #define AppVersion "0.0.0"

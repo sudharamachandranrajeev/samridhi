@@ -3,10 +3,10 @@
 # running it by hand only builds and tests. Mirrors Artha's release.yml.
 #
 # Differences from Artha, on purpose:
-#  * no sync-server job yet (self-hosting lands in P3);
-#  * no emulator / Linux-container smoke jobs, and the Windows start check
-#    does not look for the encrypted database (the app only creates it once
-#    P1's local database is in). Add them back with the database in P1/P3.
+#  * no sync-server job: the PocketBase server is built and documented under
+#    server/ (see docs/self-hosting.md) and is not part of this release;
+#  * no emulator / Linux-container smoke jobs; the Windows start check only
+#    confirms the app launches.
 
 name: Release
 

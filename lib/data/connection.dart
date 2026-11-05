@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'database.dart';
 
@@ -31,6 +32,9 @@ Future<AppDatabase> openEncryptedDatabase() async {
     driftDatabase(
       name: 'samridhi',
       native: DriftNativeOptions(
+        // App-private data dir (Linux ~/.local/share/dev.samridhi.samridhi,
+        // Windows %APPDATA%), not the user-visible Documents folder.
+        databaseDirectory: getApplicationSupportDirectory,
         setup: (rawDb) {
           // Raw 256-bit key syntax understood by SQLite3MultipleCiphers.
           rawDb.execute('PRAGMA key = "x\'$key\'";');
