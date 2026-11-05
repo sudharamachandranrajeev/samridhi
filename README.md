@@ -50,3 +50,8 @@ what happened; Samridhi is where the forward-looking plan lives.
 ## License
 
 No licence has been chosen yet; all rights reserved.
+
+## Self-hosting sync
+
+Sync is optional and goes only to a PocketBase server you run yourself; see
+[docs/self-hosting.md](docs/self-hosting.md).
