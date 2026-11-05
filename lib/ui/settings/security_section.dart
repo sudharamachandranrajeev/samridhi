@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers.dart';
+import '../../security/device_security.dart';
 import '../../security/lock_controller.dart';
 import '../../security/pin_lock.dart';
 import '../dialogs.dart';
@@ -16,6 +17,7 @@ class SecuritySection extends ConsumerStatefulWidget {
 class _SecuritySectionState extends ConsumerState<SecuritySection> {
   bool? _hasPin;
   bool _biometric = false;
+  bool _blockCapture = false;
 
   @override
   void initState() {
@@ -26,10 +28,14 @@ class _SecuritySectionState extends ConsumerState<SecuritySection> {
   Future<void> _load() async {
     final has = await ref.read(pinLockProvider).isSet;
     final bio = await ref.read(databaseProvider).getSetting(biometricSetting);
+    final block = await ref
+        .read(databaseProvider)
+        .getSetting(blockCaptureSetting);
     if (mounted) {
       setState(() {
         _hasPin = has;
         _biometric = bio == '1';
+        _blockCapture = block == '1';
       });
     }
   }
@@ -166,6 +172,24 @@ class _SecuritySectionState extends ConsumerState<SecuritySection> {
                 },
               ),
           ],
+          if (deviceSecuritySupported)
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Block screenshots and screen recording'),
+              subtitle: const Text(
+                'Hides the app from screenshots, recordings and the recent-apps '
+                'preview. Off by default; it also stops your own screenshots, '
+                'including for problem reports.',
+              ),
+              value: _blockCapture,
+              onChanged: (v) async {
+                await ref
+                    .read(databaseProvider)
+                    .setSetting(blockCaptureSetting, v ? '1' : '0');
+                await applyCaptureBlock(v);
+                setState(() => _blockCapture = v);
+              },
+            ),
         ],
       ),
     ),

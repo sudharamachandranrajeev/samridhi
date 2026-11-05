@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'data/connection.dart';
 import 'providers.dart';
+import 'security/device_security.dart';
 import 'ui/home_page.dart';
 import 'ui/lock_gate.dart';
 import 'update/launcher.dart';
@@ -16,6 +17,7 @@ Future<void> main() async {
   final store = updatesSupported ? await defaultVersionStore() : null;
   if (store != null && await relaunchIfUpdated(store)) exit(0);
   final db = await openEncryptedDatabase();
+  await applyCaptureBlock(await db.getSetting(blockCaptureSetting) == '1');
   runApp(
     ProviderScope(
       overrides: [databaseProvider.overrideWithValue(db)],

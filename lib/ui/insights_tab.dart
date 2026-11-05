@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/asset_class.dart';
 import '../core/backtest.dart';
+import '../core/direct_indexing.dart';
 import '../core/plan.dart';
 import '../core/rebalance.dart';
 import '../core/sample_data.dart';
@@ -44,6 +45,8 @@ class InsightsTab extends ConsumerWidget {
       BacktestCard(),
       SizedBox(height: 12),
       ForecastCard(),
+      SizedBox(height: 12),
+      DirectIndexingCard(),
       SizedBox(height: 8),
       DisclosureBanner(),
     ],
@@ -273,6 +276,61 @@ class ForecastCard extends ConsumerWidget {
             const Text(
               'A simple statistical model, not a prediction you can rely on: '
               'the band is a guide to uncertainty, not a guarantee.',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+final _directIndexProvider = Provider<DirectIndexResult>(
+  (ref) => simulateDirectIndexing(syntheticUniverse()),
+);
+
+class DirectIndexingCard extends ConsumerWidget {
+  const DirectIndexingCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final r = ref.watch(_directIndexProvider);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Direct indexing: how loss harvesting works',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const Text(indexingDataLabel),
+            const SizedBox(height: 8),
+            const Text(
+              '40 made-up stocks held in equal weight for 5 years, versus a '
+              'copy that sells any stock 10% below its cost and moves the '
+              'money into a same-sector peer.',
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Harvests: ${r.harvests}, realising '
+              '${fmtMoney(r.harvestedLosses)} of losses',
+            ),
+            Text(
+              'Could offset about ${fmtMoney(r.taxOffsetValue)} of tax at an '
+              'illustrative 20% rate, only if you have gains to set them '
+              'against.',
+            ),
+            Text(
+              'Ends ${fmtMoney(r.portfolioValues.last)} vs '
+              '${fmtMoney(r.indexValues.last)} for the plain index; '
+              'tracking difference ${fmtPct(r.trackingDifference)}/yr.',
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              "Education only. Each swap lowers the new holding's cost, so "
+              'much of the benefit is deferral. Wash-sale rules, costs, real '
+              'index weights and your tax rules are not modelled. Not advice.',
             ),
           ],
         ),

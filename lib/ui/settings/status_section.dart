@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers.dart';
+import '../../security/device_security.dart';
 import '../../security/lock_controller.dart';
 import '../../security/sentinel.dart';
 
@@ -51,6 +52,19 @@ class _StatusSectionState extends ConsumerState<StatusSection> {
           'Sentinel found but not usable ($reason)',
         ),
       });
+    }
+    if (deviceSecuritySupported) {
+      final hints = await rootHints();
+      rows.add(
+        hints.isEmpty
+            ? (Icons.phonelink_lock, 'No root indicators found (best-effort)')
+            : (
+                Icons.warning_amber,
+                'Device may be rooted (${hints.join(', ')}). Informational '
+                    'only; other apps on a rooted device can read more than '
+                    'they should.',
+              ),
+      );
     }
     return rows;
   }
