@@ -4,6 +4,7 @@ import 'goals_tab.dart';
 import 'insights_tab.dart';
 import 'plan_tab.dart';
 import 'risk_tab.dart';
+import 'settings/settings_page.dart';
 import 'wealth_tab.dart';
 
 class HomePage extends StatefulWidget {
@@ -27,7 +28,18 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Samridhi · ${_tabs[_index].$1}')),
+      appBar: AppBar(
+        title: Text('Samridhi · ${_tabs[_index].$1}'),
+        actions: [
+          IconButton(
+            tooltip: 'Settings',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
+            ),
+          ),
+        ],
+      ),
       body: _tabs[_index].$3,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,

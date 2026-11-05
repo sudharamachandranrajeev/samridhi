@@ -50,12 +50,42 @@ class RiskAnswers extends Table {
   Set<Column> get primaryKey => {questionId};
 }
 
-@DriftDatabase(tables: [Accounts, Holdings, Goals, RiskAnswers])
+/// Non-secret app settings (key/value). Secrets never go here — they live in
+/// the OS keychain via flutter_secure_storage.
+class Settings extends Table {
+  TextColumn get key => text()();
+  TextColumn get value => text()();
+
+  @override
+  Set<Column> get primaryKey => {key};
+}
+
+@DriftDatabase(tables: [Accounts, Holdings, Goals, RiskAnswers, Settings])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) await m.createTable(settings);
+    },
+  );
+
+  // ---- settings ----
+  Stream<String?> watchSetting(String key) => (select(
+    settings,
+  )..where((s) => s.key.equals(key))).watchSingleOrNull().map((r) => r?.value);
+  Future<String?> getSetting(String key) async => (await (select(
+    settings,
+  )..where((s) => s.key.equals(key))).getSingleOrNull())?.value;
+  Future<void> setSetting(String key, String value) => into(settings)
+      .insertOnConflictUpdate(SettingsCompanion.insert(key: key, value: value));
+  Future<void> removeSetting(String key) =>
+      (delete(settings)..where((s) => s.key.equals(key))).go();
 
   // ---- accounts / holdings ----
   Stream<List<Account>> watchAccounts() => select(accounts).watch();

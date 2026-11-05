@@ -1,0 +1,23 @@
+# docker compose up -d   (reads SAMRIDHI_SIGNUP_CODE from server/.env)
+# Listens on 127.0.0.1 only: put an HTTPS reverse proxy in front (README).
+services:
+  samridhi-sync:
+    build: .
+    image: samridhi-sync:local
+    restart: unless-stopped
+    environment:
+      SAMRIDHI_SIGNUP_CODE: ${SAMRIDHI_SIGNUP_CODE:?set SAMRIDHI_SIGNUP_CODE in server/.env}
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - pb_data:/pb/pb_data
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  pb_data:
