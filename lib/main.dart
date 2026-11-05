@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'data/connection.dart';
 import 'providers.dart';
 import 'ui/home_page.dart';
+import 'ui/lock_gate.dart';
 
 /// Samridhi — local-first wealth, asset and investment planning.
 Future<void> main() async {
@@ -31,7 +32,7 @@ class SamridhiApp extends StatelessWidget {
       title: 'Samridhi',
       theme: theme(Brightness.light),
       darkTheme: theme(Brightness.dark),
-      home: const HomePage(),
+      home: const LockGate(child: HomePage()),
     );
   }
 }

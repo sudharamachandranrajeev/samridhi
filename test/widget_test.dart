@@ -6,9 +6,19 @@ import 'package:samridhi/core/risk_profile.dart';
 import 'package:samridhi/data/database.dart';
 import 'package:samridhi/main.dart';
 import 'package:samridhi/providers.dart';
+import 'package:samridhi/security/lock_controller.dart';
+import 'package:samridhi/security/pin_lock.dart';
+import 'package:samridhi/sync/vault_crypto.dart' show KdfParams;
 
-Widget app(AppDatabase db) => ProviderScope(
-  overrides: [databaseProvider.overrideWithValue(db)],
+import 'support/memory_store.dart';
+
+Widget app(AppDatabase db, {PinLock? lock}) => ProviderScope(
+  overrides: [
+    databaseProvider.overrideWithValue(db),
+    pinLockProvider.overrideWithValue(
+      lock ?? PinLock(MemoryStore(), kdf: KdfParams.fastForTests),
+    ),
+  ],
   child: const SamridhiApp(),
 );
 
@@ -17,6 +27,15 @@ Widget app(AppDatabase db) => ProviderScope(
 Future<void> unmount(WidgetTester tester) async {
   await tester.pumpWidget(const SizedBox());
   await tester.pump(Duration.zero);
+}
+
+Future<void> settle(WidgetTester tester) async {
+  for (var i = 0; i < 4; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pump();
+  }
 }
 
 void main() {
@@ -86,6 +105,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(app(db));
+    await settle(tester);
     await tester.tap(find.text('Insights'));
     for (var i = 0; i < 4; i++) {
       await tester.runAsync(
@@ -102,19 +122,11 @@ void main() {
     await unmount(tester);
   });
 
-  Future<void> settle(WidgetTester tester) async {
-    for (var i = 0; i < 4; i++) {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 100)),
-      );
-      await tester.pump();
-    }
-  }
-
   testWidgets('agents are off by default and need an explicit tap', (
     tester,
   ) async {
     await tester.pumpWidget(app(db));
+    await settle(tester);
     await tester.tap(find.text('Agents'));
     await settle(tester);
     expect(find.text('Agents are off'), findsOneWidget);
@@ -143,6 +155,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(app(db));
+    await settle(tester);
     await tester.tap(find.text('Agents'));
     await settle(tester);
     expect(find.text('Rebalance to target'), findsOneWidget);
@@ -157,6 +170,33 @@ void main() {
     // Holdings are untouched by accepting.
     final hs = await tester.runAsync(() => db.select(db.holdings).get());
     expect(hs!.single.value, 10000);
+    await unmount(tester);
+  });
+
+  testWidgets('app lock: PIN screen hides the app until the right PIN', (
+    tester,
+  ) async {
+    final lock = PinLock(MemoryStore(), kdf: KdfParams.fastForTests);
+    await tester.runAsync(() => lock.setPin('2468'));
+    await tester.pumpWidget(app(db, lock: lock));
+    await settle(tester);
+    expect(find.text('Samridhi is locked'), findsOneWidget);
+    expect(find.text('Plan'), findsNothing);
+    await tester.enterText(find.byType(TextField), '0000');
+    await tester.tap(find.text('Unlock'));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 300)),
+    );
+    await tester.pump();
+    expect(find.textContaining('Wrong PIN'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), '2468');
+    await tester.tap(find.text('Unlock'));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 300)),
+    );
+    await tester.pump();
+    expect(find.text('Samridhi is locked'), findsNothing);
+    expect(find.text('Plan'), findsWidgets);
     await unmount(tester);
   });
 
