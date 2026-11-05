@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'ai_section.dart';
 import 'backup_section.dart';
+import 'import_section.dart';
 import 'help_section.dart';
 import 'security_section.dart';
 import 'status_section.dart';
@@ -22,6 +23,8 @@ class SettingsPage extends StatelessWidget {
         SecuritySection(),
         SizedBox(height: 12),
         AiSection(),
+        SizedBox(height: 12),
+        ImportSection(),
         SizedBox(height: 12),
         BackupSection(),
         SizedBox(height: 12),

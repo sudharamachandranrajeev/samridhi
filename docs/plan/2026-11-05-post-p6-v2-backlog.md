@@ -8,7 +8,7 @@ Supersedes nothing; extends the v1 plan after P0-P6. Sources: the plan's
 |---|---|---|
 | 1 | Behavioural-gap nudge from the user's own accepted-rebalance log | done (`BehaviorAgent`) |
 | 2 | Discrete-tier 1-7 catalog mode | done (Plan tab chips; `buildPlan(tier:)`) |
-| 3 | Read-only Artha import | planned (needs Artha schema review; never writes to Artha) |
+| 3 | Read-only holdings import (file) | done; Artha-side exporter still to be written in the Artha repo |
 | 4 | Android screen-capture warning / root-ish detection | planned |
 | 5 | Direct-indexing illustrative simulator | planned (education only, synthetic data) |
 
@@ -32,3 +32,16 @@ states plainly that tier mode does not de-risk short-horizon goals, so the
 safety cap the default mode applies is deliberately not hidden. Tests:
 even spacing/clamping, identical per-goal portfolios, equity rises with tier,
 weights sum to 1.
+
+## 3. Read-only holdings import
+
+Artha is a double-entry ledger whose database key sits in Artha's own
+keychain entry; Samridhi must not open that database. The link is therefore a
+file the user exports and chooses: JSON `samridhi-holdings-v1` or CSV
+(`account,wrapper,holding,assetClass,value`). `parseHoldings` validates
+strictly (2 MB cap, known asset classes/wrappers, finite non-negative
+amounts, errors never echo raw values); Settings > Import holdings shows a
+preview and needs a yes. Ids are stable (`imp:<slug>`) so re-importing
+updates instead of duplicating; nothing is deleted. **Open item:** Artha does
+not yet produce this file; that exporter belongs in the Artha repo and was
+not touched here.
