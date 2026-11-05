@@ -1,5 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:samridhi/core/risk_profile.dart';
@@ -7,6 +8,8 @@ import 'package:samridhi/data/database.dart';
 import 'package:samridhi/main.dart';
 import 'package:samridhi/providers.dart';
 import 'package:samridhi/security/lock_controller.dart';
+import 'package:samridhi/ui/settings/help_section.dart';
+import 'package:samridhi/ui/settings/settings_page.dart';
 import 'package:samridhi/ui/motion.dart';
 import 'package:samridhi/security/pin_lock.dart';
 import 'package:samridhi/sync/vault_crypto.dart' show KdfParams;
@@ -219,6 +222,41 @@ void main() {
     );
     expect(normal, const Duration(milliseconds: 350));
     expect(reduced, Duration.zero);
+  });
+
+  testWidgets('settings page renders every section without errors', (
+    tester,
+  ) async {
+    // The settings sections read the OS keychain; stub the plugin channel.
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('plugins.it_nomads.com/flutter_secure_storage'),
+      (_) async => null,
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('plugins.it_nomads.com/flutter_secure_storage'),
+        null,
+      ),
+    );
+    await tester.pumpWidget(app(db));
+    await settle(tester);
+    await tester.tap(find.byTooltip('Settings'));
+    await settle(tester);
+    expect(find.text('Settings'), findsWidgets);
+    // Scroll to the last section so every lazily built section is exercised.
+    await tester.scrollUntilVisible(
+      find.byType(HelpSection),
+      400,
+      scrollable: find
+          .descendant(
+            of: find.byType(SettingsPage),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    expect(tester.takeException(), isNull);
+    await tester.pageBack();
+    await unmount(tester);
   });
 
   test('database round-trips holdings and cascades account delete', () async {

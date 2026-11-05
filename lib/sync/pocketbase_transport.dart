@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
 import 'package:pocketbase/pocketbase.dart';
 
 import 'sync_service.dart';
@@ -18,11 +19,15 @@ class PocketBaseTransport implements SyncTransport {
     required String email,
     required String password,
     required String device,
+    http.Client Function()? httpClientFactory, // tests inject a fake server
   }) async {
     if (!isAllowedServerUrl(serverUrl)) {
       throw ArgumentError('Use https:// for servers outside your own network.');
     }
-    final pb = PocketBase(serverUrl.trim());
+    final pb = PocketBase(
+      serverUrl.trim(),
+      httpClientFactory: httpClientFactory,
+    );
     await pb.collection('users').authWithPassword(email, password);
     return PocketBaseTransport._(pb, device);
   }
