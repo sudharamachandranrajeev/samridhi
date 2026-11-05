@@ -25,3 +25,6 @@ server/pb_data/
 # Local sample / real data — never commit real holdings
 *.samridhi-db
 *.samridhi-db.bak
+
+# Agent run artefacts
+.claude-*
