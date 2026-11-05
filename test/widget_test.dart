@@ -67,6 +67,41 @@ void main() {
     await unmount(tester);
   });
 
+  testWidgets('insights tab shows backtest, forecast and rebalance advice', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      await db.upsertAccount(AccountsCompanion.insert(id: 'a', name: 'Sample'));
+      await db.upsertHolding(
+        HoldingsCompanion.insert(
+          id: 'h',
+          accountId: 'a',
+          name: 'Sample equity fund',
+          assetClass: 'equity',
+          value: 10000,
+        ),
+      );
+    });
+    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(app(db));
+    await tester.tap(find.text('Insights'));
+    for (var i = 0; i < 4; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pump();
+    }
+    expect(find.text('Rebalancing'), findsOneWidget);
+    expect(find.textContaining('Outside bands'), findsOneWidget);
+    expect(find.textContaining('Synthetic sample data'), findsWidgets);
+    expect(find.textContaining('Never rebalance'), findsOneWidget);
+    expect(find.textContaining('band held'), findsWidgets);
+    expect(find.textContaining('not financial advice'), findsOneWidget);
+    await unmount(tester);
+  });
+
   test('database round-trips holdings and cascades account delete', () async {
     await db.upsertAccount(AccountsCompanion.insert(id: 'a', name: 'Sample'));
     await db.upsertHolding(
