@@ -1,0 +1,32 @@
+name: Bug report
+description: Something in Samridhi isn't working
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Please do not paste real account
+        numbers, balances or holdings — use rounded/sample figures.
+  - type: input
+    id: version
+    attributes:
+      label: Samridhi version
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS
+      options: [Windows, Linux, Android]
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead

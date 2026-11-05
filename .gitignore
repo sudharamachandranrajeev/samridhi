@@ -1,0 +1,27 @@
+# Build artifacts
+build/
+.dart_tool/
+.flutter-plugin-dependencies
+.packages
+.pub-cache/
+.pub/
+/pubspec.lock.bak
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / local server data
+server/.env
+server/pb_data/
+*.keystore
+*.jks
+
+# Local sample / real data — never commit real holdings
+*.samridhi-db
+*.samridhi-db.bak
