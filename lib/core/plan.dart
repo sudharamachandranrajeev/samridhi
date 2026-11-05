@@ -42,11 +42,22 @@ Map<AssetClass, double> toWeights(Map<AssetClass, double> values) {
   };
 }
 
+/// Discrete risk tiers 1 (most cautious) to 7 (most adventurous), the simpler
+/// "just pick a number" alternative to per-goal glide paths.
+const riskTierCount = 7;
+
+/// Risk score (0-100) a tier stands for; tiers are evenly spaced.
+double tierRiskScore(int tier) {
+  final t = tier.clamp(1, riskTierCount);
+  return 100.0 * (t - 1) / (riskTierCount - 1);
+}
+
 /// Builds per-goal targets and the blended overall target. With no goals,
 /// a single default 20-year "general investing" goal is assumed.
 PlanResult buildPlan({
   required double riskScore,
   required List<GoalInput> goals,
+  int? tier,
 }) {
   final inputs = goals.isEmpty
       ? const [GoalInput('General investing', 1, 20)]
@@ -55,7 +66,17 @@ PlanResult buildPlan({
     for (final g in inputs)
       GoalPlan(
         g,
-        targetAllocation(riskScore: riskScore, horizonYears: g.horizonYears),
+        // In tier mode every goal gets the same portfolio, whatever its
+        // horizon (a long horizon here only means "no glide-path cap").
+        tier == null
+            ? targetAllocation(
+                riskScore: riskScore,
+                horizonYears: g.horizonYears,
+              )
+            : targetAllocation(
+                riskScore: tierRiskScore(tier),
+                horizonYears: 30,
+              ),
       ),
   ];
   final totalAmt = inputs.fold(0.0, (a, g) => a + g.targetAmount);

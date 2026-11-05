@@ -57,6 +57,8 @@ class PlanTab extends ConsumerWidget {
         for (final c in classes)
           _MixRow(c.label, plan.blended[c]!, current[c]!),
         const SizedBox(height: 16),
+        const _TierPicker(),
+        const SizedBox(height: 16),
         Text('By goal', style: Theme.of(context).textTheme.titleMedium),
         for (final p in plan.perGoal)
           Card(
@@ -102,6 +104,50 @@ class _MixRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Per-goal glide paths (default) or one fixed risk tier 1-7 for everything.
+class _TierPicker extends ConsumerWidget {
+  const _TierPicker();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tier = ref.watch(tierProvider).asData?.value;
+    final db = ref.read(databaseProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Portfolio style', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            ChoiceChip(
+              label: const Text('Per goal'),
+              selected: tier == null,
+              onSelected: (_) => db.removeSetting('plan.tier'),
+            ),
+            for (var t = 1; t <= riskTierCount; t++)
+              ChoiceChip(
+                label: Text('$t'),
+                selected: tier == t,
+                onSelected: (_) => db.setSetting('plan.tier', '$t'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          tier == null
+              ? 'Each goal glides to safer assets as its date nears.'
+              : 'Tier $tier of $riskTierCount (1 cautious, 7 adventurous): '
+                    'one fixed portfolio for every goal. It does not de-risk '
+                    'short-term goals, so a bad year could hit them hard.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
     );
   }
 }

@@ -47,6 +47,14 @@ final currentMixProvider = Provider<Map<AssetClass, double>>((ref) {
   ]);
 });
 
+/// Chosen discrete risk tier (1-7), or null for the default per-goal mode.
+final tierProvider = StreamProvider<int?>(
+  (ref) => ref
+      .watch(databaseProvider)
+      .watchSetting('plan.tier')
+      .map((v) => int.tryParse(v ?? '')),
+);
+
 final planProvider = Provider<PlanResult?>((ref) {
   final risk = ref.watch(riskScoreProvider);
   if (risk == null) return null;
@@ -56,6 +64,7 @@ final planProvider = Provider<PlanResult?>((ref) {
     goals: [
       for (final g in goals) GoalInput(g.name, g.targetAmount, g.horizonYears),
     ],
+    tier: ref.watch(tierProvider).asData?.value,
   );
 });
 

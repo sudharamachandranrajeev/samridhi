@@ -30,4 +30,34 @@ void main() {
     final p = buildPlan(riskScore: 50, goals: const []);
     expect(p.perGoal.single.goal.horizonYears, 20);
   });
+
+  group('risk tiers', () {
+    test('tier scores are evenly spaced and clamped', () {
+      expect(tierRiskScore(1), 0);
+      expect(tierRiskScore(7), 100);
+      expect(tierRiskScore(4), 50);
+      expect(tierRiskScore(0), 0);
+      expect(tierRiskScore(99), 100);
+    });
+
+    test(
+      'tier mode gives every goal the same portfolio; higher = more equity',
+      () {
+        const goals = [GoalInput('a', 100, 2), GoalInput('b', 100, 30)];
+        final p = buildPlan(riskScore: 10, goals: goals, tier: 6);
+        expect(
+          p.perGoal[0].allocation.weights,
+          p.perGoal[1].allocation.weights,
+        );
+        final lo = buildPlan(riskScore: 10, goals: goals, tier: 1);
+        final hi = buildPlan(riskScore: 10, goals: goals, tier: 7);
+        expect(
+          hi.blended[AssetClass.equity]!,
+          greaterThan(lo.blended[AssetClass.equity]!),
+        );
+        final sum = p.blended.values.fold(0.0, (a, b) => a + b);
+        expect(sum, closeTo(1, 1e-9));
+      },
+    );
+  });
 }
