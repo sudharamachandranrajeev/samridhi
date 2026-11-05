@@ -78,3 +78,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Bundle SQLite3MultipleCiphers instead of plain SQLite so the local database
+# is encrypted at rest on every platform.
+hooks:
+  user_defines:
+    sqlite3:
+      source: sqlite3mc
