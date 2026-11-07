@@ -1,3 +1,7 @@
+> **This repo is retired and archived.** Its features have moved into
+> [Samriddhi](https://github.com/sudharamachandranrajeev/samriddhi) (Tauri app, version 0.2.0 onwards).
+> Use that repo for downloads, issues and updates. The code below is kept for reference only.
+
 # Samridhi
 
 Local-first wealth, asset and investment management system for Linux,
